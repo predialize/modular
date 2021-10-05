@@ -1,0 +1,27 @@
+{    
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "moduleResolution": "node",
+    "module": "commonjs",
+    "allowSyntheticDefaultImports": true,
+    "target": "es6",
+    "noImplicitAny": false,
+    "experimentalDecorators": true,
+    "sourceMap": true,
+    "outDir": "",
+    "esModuleInterop": true,
+    "types": ["node"],
+    "typeRoots": [
+      "node_modules/@types",
+    ],
+    "allowJs": true,
+    "declaration": true
+  },
+  "include": [
+    "./src/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
+}
+
