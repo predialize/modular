@@ -49,7 +49,7 @@ export const RouterComponent = (...componentArgs) => {
                            ...method.args,
                            (req, res, next) => {
                               const params = req.headers.params ? JSON.parse(req.headers.params) : {};
-                              const token = req.headers.authorization.replace('Bearer ', '');
+                              const token = req.headers.authorization ? req.headers.authorization.replace('Bearer ', '') : null;
 
                               req.locals = req.headers.locals ? JSON.parse(req.headers.locals) : {};
                               req.params = Object.assign({}, params, req.params);
