@@ -1,6 +1,7 @@
 declare class Node {
     app: any;
     host: any;
+    path_rewrite: any;
     route: any;
     param: any;
     middlewares: any;

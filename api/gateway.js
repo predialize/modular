@@ -11,8 +11,9 @@ class Node {
     constructor(app, params) {
         this.app = app;
         this.host = params.host;
+        this.path_rewrite = params.path_rewrite;
         this.route = params.route;
-        this.param = params.param || '';
+        this.param = params.param || "";
         this.middlewares = params.middlewares || [(req, res, next) => next()];
         this.parentNodes = params.parentNodes;
         this.children = params.children;
@@ -24,8 +25,10 @@ class Node {
                     const parentRoute = parentNode.parentNodes
                         ? parentNode.getFullRoutes()
                         : [parentNode.route];
-                    const path = parentNode.param ? [parentNode.param, this.route] : [this.route];
-                    return parentRoute.concat(...path).join('/');
+                    const path = parentNode.param
+                        ? [parentNode.param, this.route]
+                        : [this.route];
+                    return parentRoute.concat(...path).join("/");
                 });
             }
             else {
@@ -39,7 +42,7 @@ class Node {
             let rest = [];
             const length = size - str.length;
             rest.length = length > 0 ? length : 0;
-            return str + rest.map((r) => '').join(' ');
+            return str + rest.map((r) => "").join(" ");
         };
         const logInfo = () => {
             console.info(`Proxy created: /${fullwidth(route)}  -> ${this.host}`);
@@ -54,15 +57,17 @@ class Node {
     }
     setProxy() {
         const routes = this.getFullRoutes();
-        const getPath = (path, req) => req.url.split(this.route)[1];
-        routes && routes.forEach((route) => {
-            this.app.use('/' + route, ...this.middlewares, http_proxy_middleware_1.createProxyMiddleware({
-                target: this.host,
-                changeOrigin: true,
-                pathRewrite: getPath,
-                logProvider: this.logger(route),
-            }));
-        });
+        /** path_rewrite comes from env file and always with a string value and is not always present */
+        const getPath = (path, req) => this.path_rewrite === "false" ? req.url : req.url.split(this.route)[1];
+        routes &&
+            routes.forEach((route) => {
+                this.app.use("/" + route, ...this.middlewares, http_proxy_middleware_1.createProxyMiddleware({
+                    target: this.host,
+                    changeOrigin: true,
+                    pathRewrite: getPath,
+                    logProvider: this.logger(route),
+                }));
+            });
     }
 }
 class Gateway {
@@ -80,30 +85,34 @@ class Gateway {
     loadNodes(nodes, parent = null) {
         return nodes.reduce((prev, node) => {
             const middlewares = node.middlewares
-                ? { middlewares: node.middlewares.concat(parent ? (parent.middlewares || []) : []) }
+                ? {
+                    middlewares: node.middlewares.concat(parent ? parent.middlewares || [] : []),
+                }
                 : parent && parent.middlewares
                     ? { middlewares: parent.middlewares }
                     : {};
             const parentNode = parent ? { parentNodes: [parent] } : {};
             const currentNode = this.getNode(Object.assign({}, node, parentNode, middlewares));
-            const child = node.children ? this.loadNodes(node.children, currentNode) : currentNode;
+            const child = node.children
+                ? this.loadNodes(node.children, currentNode)
+                : currentNode;
             return child.route === currentNode.route
                 ? prev.concat(child)
                 : prev.concat(child, currentNode);
         }, []);
     }
     useProxy(nodes) {
-        nodes.forEach(node => {
+        nodes.forEach((node) => {
             if (node instanceof Node) {
                 node.setProxy();
             }
         });
     }
     listen(port, cb) {
-        this.app.use(body_parser_1.json({ limit: '50mb' }));
-        this.app.use(body_parser_1.urlencoded({ limit: '50mb', extended: true }));
+        this.app.use(body_parser_1.json({ limit: "50mb" }));
+        this.app.use(body_parser_1.urlencoded({ limit: "50mb", extended: true }));
         this.app.use(cors_1.default(this.options.cors.exposedHeaders));
-        this.app.disable('x-powered-by');
+        this.app.disable("x-powered-by");
         this.app.listen(port, cb);
     }
 }
