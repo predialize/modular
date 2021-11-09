@@ -41,7 +41,8 @@ class DependenciesResolver {
             });
         }
         catch (ex) {
-            throw `${this.targetName}: one of the dependencies could not be injected. Check the file path - ${ex}`;
+            console.log(ex);
+            throw `${this.targetName}: one of the dependencies could not be injected: ${JSON.stringify(ex)}. `;
         }
     }
     binds(evaluation, Target) {
