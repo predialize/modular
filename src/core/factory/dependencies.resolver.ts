@@ -49,8 +49,11 @@ export default class DependenciesResolver {
             return new DependencyResolver(broadcast);
          });
       } catch(ex) {
-         console.log(ex)
-         throw `${this.targetName}: one of the dependencies could not be injected: ${JSON.stringify(ex)}. `;
+         if(ex.statusCode) {
+            throw ex;   
+         } else {
+            throw `${this.targetName}: one of the dependencies could not be injected: ${ex}. `;
+         }         
       } 
    }
 

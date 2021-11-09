@@ -41,8 +41,12 @@ class DependenciesResolver {
             });
         }
         catch (ex) {
-            console.log(ex);
-            throw `${this.targetName}: one of the dependencies could not be injected: ${JSON.stringify(ex)}. `;
+            if (ex.statusCode) {
+                throw ex;
+            }
+            else {
+                throw `${this.targetName}: one of the dependencies could not be injected: ${ex}. `;
+            }
         }
     }
     binds(evaluation, Target) {
