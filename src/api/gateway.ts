@@ -56,7 +56,7 @@ class Node {
     };
 
     const logInfo = () => {
-      console.info(`Proxy created: /${fullwidth(route)}  -> ${this.host}`);
+      console.info(`Proxy created: ${fullwidth(route)}  -> ${this.host}`);
     };
 
     return () => ({
@@ -72,12 +72,13 @@ class Node {
     const routes = this.getFullRoutes();
 
     /** path_rewrite comes from env file and always with a string value and is not always present */
-    const getPath = (path, req) => this.path_rewrite === "false" ? req.url : req.url.split(this.route)[1];
+    const getPath = (path, req) =>
+      this.path_rewrite === "false" ? req.url : req.url.split(this.route)[1];
 
     routes &&
       routes.forEach((route) => {
         this.app.use(
-          "/" + route,
+          route,
           ...this.middlewares,
           createProxyMiddleware({
             target: this.host,
@@ -123,9 +124,11 @@ export default class Gateway {
         : {};
 
       const parentNode = parent ? { parentNodes: [parent] } : {};
+      
       const currentNode = this.getNode(
         Object.assign({}, node, parentNode, middlewares)
       );
+
       const child = node.children
         ? this.loadNodes(node.children, currentNode)
         : currentNode;

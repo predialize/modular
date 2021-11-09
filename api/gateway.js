@@ -45,7 +45,7 @@ class Node {
             return str + rest.map((r) => "").join(" ");
         };
         const logInfo = () => {
-            console.info(`Proxy created: /${fullwidth(route)}  -> ${this.host}`);
+            console.info(`Proxy created: ${fullwidth(route)}  -> ${this.host}`);
         };
         return () => ({
             log: (str) => console.log(str),
@@ -61,7 +61,7 @@ class Node {
         const getPath = (path, req) => this.path_rewrite === "false" ? req.url : req.url.split(this.route)[1];
         routes &&
             routes.forEach((route) => {
-                this.app.use("/" + route, ...this.middlewares, http_proxy_middleware_1.createProxyMiddleware({
+                this.app.use(route, ...this.middlewares, http_proxy_middleware_1.createProxyMiddleware({
                     target: this.host,
                     changeOrigin: true,
                     pathRewrite: getPath,
@@ -74,6 +74,7 @@ class Gateway {
     constructor(options) {
         this.app = express_1.default();
         this.options = options;
+        this.app.use(cors_1.default(this.options.cors.exposedHeaders));
     }
     getNode(options) {
         return new Node(this.app, options);

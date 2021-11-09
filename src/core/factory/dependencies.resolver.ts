@@ -13,23 +13,24 @@ export default class DependenciesResolver {
    }
 
    validateOptions(options) {
-      if (options && this.config.options) {
-         const keys = Object.keys(options);
-         let error = false;
+      try {
+         if (options && this.config.options) {
+            const keys = Object.keys(options);
+            let error;
 
-         for (let i = 0; i < keys.length; i++) {
-            if (
-               this.config.options &&
-               !this.config.options.some((ak) => ak === keys[i])
-            ) {
-               console.error(
-                  `${this.targetName} error: options ${keys[i]} is not valid for ${this.config.type}'s decorator type.`
-               );
-               error = true;
+            for (let i = 0; i < keys.length; i++) {
+               if (
+                  this.config.options &&
+                  !this.config.options.some((ak) => ak === keys[i])
+               ) {
+                  error = `${this.targetName} error: options ${keys[i]} is not valid for ${this.config.type}'s decorator type.`;
+               }
             }
-         }
 
-         if (error) process.exit(0);
+            if (error) throw error;
+         }
+      } catch(ex) {
+         throw ex;
       }
    }
 
@@ -42,19 +43,13 @@ export default class DependenciesResolver {
                DependencyResolver.behaviours &&
                !DependencyResolver.behaviours.some((b) => b === behaviour)
             ) {
-               console.error(
-                  `${this.targetName} error: ${DependencyResolver.targetName} ${DependencyResolver.type} has no ${behaviour} behaviour.`
-               );
-               
-               process.exit(0);
+               throw `${this.targetName} error: ${DependencyResolver.targetName} ${DependencyResolver.type} has no ${behaviour} behaviour.`;
             }
 
             return new DependencyResolver(broadcast);
          });
       } catch(ex) {
-         console.error("\x1b[31m", `${this.targetName}: one of the dependencies could not be injected. Check the file path.`);
-
-         process.exit(0);
+         throw `${this.targetName}: one of the dependencies could not be injected. Check the file path - ${ex}`;
       } 
    }
 

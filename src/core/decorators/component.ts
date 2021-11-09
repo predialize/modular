@@ -5,25 +5,29 @@ class ComponentResolver extends DependenciesResolver {
    constructor(Target, config, options, customs, broadcast) {
       super(Target, config, options, customs, broadcast);      
 
-      Target.prototype.customs = customs;
+      try {
+         Target.prototype.customs = customs;
 
-      if (options && options.injects && !(options.injects instanceof Array)) {
-         console.error(
-            `${Target.name} error: injects option must not be array type.`
-         );
-         process.exit(0);
-      }
+         if (options && options.injects && !(options.injects instanceof Array)) {
+            console.error(
+               `${Target.name} error: injects option must not be array type.`
+            );
+            process.exit(0);
+         }
 
-      if (!options) return new Target();
+         if (!options) return new Target();
 
-      Target = this.binds(options.binds, Target);      
+         Target = this.binds(options.binds, Target);      
 
-      if (options.resolves) {
-         return options.resolves(Target, config, options, customs, broadcast);
-      } else {
-         const injectables = this.resolve(options.injects, INJECTABLE, broadcast);
+         if (options.resolves) {
+            return options.resolves(Target, config, options, customs, broadcast);
+         } else {
+            const injectables = this.resolve(options.injects, INJECTABLE, broadcast);
 
-         return injectables ? new Target(...injectables) : new Target();
+            return injectables ? new Target(...injectables) : new Target();
+         }
+      } catch(ex) {
+         throw ex;
       }
    }
 }
