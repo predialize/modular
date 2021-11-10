@@ -2,16 +2,21 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MethodFactory = exports.BootstrapFactory = exports.ClassFactory = void 0;
 const ClassFactory = (decoratorSettings) => {
-    return (defaultOptions = null, customOptions = null) => {
-        return (Target) => {
-            /** Object.assign: hacks Target's dynamic private properties */
-            return Object.assign(class {
-                constructor(broadcast) {
-                    return new decoratorSettings.resolver(Target, decoratorSettings, defaultOptions, customOptions, broadcast);
-                }
-            });
+    try {
+        return (defaultOptions = null, customOptions = null) => {
+            return (Target) => {
+                /** Object.assign: hacks Target's dynamic private properties */
+                return Object.assign(class {
+                    constructor(broadcast) {
+                        return new decoratorSettings.resolver(Target, decoratorSettings, defaultOptions, customOptions, broadcast);
+                    }
+                });
+            };
         };
-    };
+    }
+    catch (ex) {
+        throw ex;
+    }
 };
 exports.ClassFactory = ClassFactory;
 const MethodFactory = (Resolver, config) => {

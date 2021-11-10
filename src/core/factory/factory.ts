@@ -1,22 +1,26 @@
 const ClassFactory = (decoratorSettings) => {
-   return (defaultOptions = null, customOptions = null) => {
-      return (Target) => {         
-         /** Object.assign: hacks Target's dynamic private properties */
-         return Object.assign(
-            class {
-               constructor(broadcast) {
-                  return new decoratorSettings.resolver(
-                     Target,
-                     decoratorSettings,
-                     defaultOptions,
-                     customOptions,
-                     broadcast
-                  );
+   try {
+      return (defaultOptions = null, customOptions = null) => {
+         return (Target) => {         
+            /** Object.assign: hacks Target's dynamic private properties */
+            return Object.assign(
+               class {
+                  constructor(broadcast) {
+                     return new decoratorSettings.resolver(
+                        Target,
+                        decoratorSettings,
+                        defaultOptions,
+                        customOptions,
+                        broadcast
+                     );
+                  }
                }
-            }
-         );
+            );
+         };
       };
-   };
+   } catch(ex) {
+      throw ex;
+   }
 };
 
 const MethodFactory = (Resolver, config) => {
