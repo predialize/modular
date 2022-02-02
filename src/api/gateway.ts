@@ -72,8 +72,14 @@ class Node {
     const routes = this.getFullRoutes();
 
     /** path_rewrite comes from env file and always with a string value and is not always present */
-    const getPath = (path, req) =>
-      this.path_rewrite === "false" ? req.url : req.url.split(this.route)[1];
+    const getPath = (path, req) => {
+      if (this.path_rewrite === "false") {
+        return req.url;
+      } else {
+        const [, ...paths] = req.url.split(this.route);
+        return paths.join('');
+      }
+    }
 
     routes &&
       routes.forEach((route) => {
