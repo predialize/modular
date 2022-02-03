@@ -77,7 +77,7 @@ class Node {
         return req.url;
       } else {
         const [, ...paths] = req.url.split(this.route);
-        return paths.join('');
+        return paths.join(this.route);
       }
     }
 
