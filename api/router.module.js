@@ -2,6 +2,29 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RouterModule = void 0;
 const express_1 = require("express");
+const parseRequestQuery = (query) => {
+    const parseTraverse = (query) => {
+        return Object.keys(query)
+            .reduce((prev, key) => {
+            const value = query[key];
+            if (value && typeof value === 'object') {
+                return Object.assign({}, prev, { [key]: parseTraverse(value) });
+            }
+            else {
+                if (!isNaN(Number(value))) {
+                    return Object.assign({}, prev, { [key]: Number(value) });
+                }
+                else if (['true', 'false'].includes(value)) {
+                    return Object.assign({}, prev, { [key]: value === 'true' });
+                }
+                else {
+                    return Object.assign({}, prev, { [key]: value === 'null' ? null : value });
+                }
+            }
+        }, {});
+    };
+    return parseTraverse(query);
+};
 class RouterModuleResolver {
     constructor(routes) {
         this.build(routes);
@@ -22,6 +45,9 @@ class RouterModuleResolver {
             }
             if (params) {
                 req.params = Object.assign({}, req.params, params);
+            }
+            if (req.query) {
+                req.query = parseRequestQuery(req.query);
             }
             next();
         };

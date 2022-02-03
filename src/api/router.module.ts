@@ -1,5 +1,28 @@
 import { Router as ExpRouter } from 'express';
 
+const parseRequestQuery = (query) => {
+   const parseTraverse = (query) => {
+      return Object.keys(query)
+         .reduce((prev, key) => {
+            const value = query[key];
+            
+            if(value && typeof value === 'object') {             
+               return Object.assign({}, prev, { [key]: parseTraverse(value) })
+            } else {
+               if(!isNaN(Number(value))) {
+                  return Object.assign({}, prev, { [key]: Number(value) });
+               } else if(['true', 'false'].includes(value)) {
+                  return Object.assign({}, prev, { [key]: value === 'true' });
+               } else {
+                  return Object.assign({}, prev, { [key]: value === 'null' ? null : value });
+               }
+            }
+         }, {});
+   }
+
+   return parseTraverse(query);
+}
+
 class RouterModuleResolver {
    constructor(routes) {
       this.build(routes);
@@ -19,7 +42,7 @@ class RouterModuleResolver {
       const defaultMiddleware = (req, res, next) => {
          const locals = req.headers.locals ? JSON.parse(req.headers.locals) : null;
          const params = req.headers.params ? JSON.parse(req.headers.params) : null;
-
+         
          if(locals) {
              req.locals = Object.assign({}, req.locals, locals);
          }
@@ -27,6 +50,10 @@ class RouterModuleResolver {
          if(params) {
              req.params = Object.assign({}, req.params, params);
          }
+
+         if(req.query) {
+            req.query = parseRequestQuery(req.query);
+         }         
 
          next();
      }
