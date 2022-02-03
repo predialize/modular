@@ -1,6 +1,6 @@
 {
   "name": "@predialize/modular",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "private": false,
   "description": "",
   "license": "UNLICENSED",
@@ -27,7 +27,10 @@
     "typescript": "^3.8.3"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "git_push": "git add . && git commit -m 'deploy new version' && git push",
+    "publish": "npm publish --access public",
+    "deploy": "npm run build && npm run git_push && npm run publish"
   },
   "main": "index.js",
   "repository": {
