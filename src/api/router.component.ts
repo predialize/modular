@@ -50,6 +50,7 @@ export const RouterComponent = (...componentArgs) => {
                     const params = req.headers.params
                       ? JSON.parse(req.headers.params)
                       : {};
+
                     const token = req.headers.authorization
                       ? req.headers.authorization.replace("Bearer ", "")
                       : null;
@@ -57,6 +58,7 @@ export const RouterComponent = (...componentArgs) => {
                     req.locals = req.headers.locals
                       ? JSON.parse(req.headers.locals)
                       : {};
+
                     req.params = Object.assign({}, params, req.params);
 
                     const dependencies =
@@ -93,6 +95,6 @@ export const RouterComponent = (...componentArgs) => {
       };
     };
   } catch (ex) {
-      throw ex;
+    throw ex;
   }
 };

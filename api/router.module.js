@@ -5,7 +5,11 @@ const express_1 = require("express");
 const parseRequestQuery = (query) => {
     const parseTraverse = (query) => {
         return Object.keys(query).reduce((prev, key) => {
-            const value = query[key];
+            const hasArrayInString = query[key] && query[key][0] == "[";
+            const hasObjectInString = query[key] && query[key][0] == "{";
+            const value = hasArrayInString || hasObjectInString
+                ? JSON.parse(query[key])
+                : query[key];
             const data = (() => {
                 if (typeof value === "object") {
                     if (value instanceof Array) {
@@ -59,7 +63,7 @@ class RouterModuleResolver {
         };
         const middlewares = Route.middlewares || [];
         return (router) => {
-            router.use(Route.path || "/", ...[].concat(defaultMiddleware, middlewares), (() => {
+            router.use(Route.path || "/", ...middlewares.concat(defaultMiddleware), (() => {
                 const rootRouter = express_1.Router({ mergeParams: true });
                 children.forEach((child) => {
                     child && child(rootRouter);
