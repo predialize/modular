@@ -4,23 +4,29 @@ exports.RouterModule = void 0;
 const express_1 = require("express");
 const parseRequestQuery = (query) => {
     const parseTraverse = (query) => {
-        return Object.keys(query)
-            .reduce((prev, key) => {
+        return Object.keys(query).reduce((prev, key) => {
             const value = query[key];
-            if (value && typeof value === 'object') {
-                return Object.assign({}, prev, { [key]: parseTraverse(value) });
-            }
-            else {
-                if (!isNaN(Number(value))) {
-                    return Object.assign({}, prev, { [key]: Number(value) });
+            const data = (() => {
+                if (typeof value === "object") {
+                    if (value instanceof Array) {
+                        const arrVal = value.map((val) => typeof val === "object" ? parseTraverse(val) : val);
+                        return { [key]: arrVal };
+                    }
+                    else {
+                        return { [key]: parseTraverse(value) };
+                    }
                 }
-                else if (['true', 'false'].includes(value)) {
-                    return Object.assign({}, prev, { [key]: value === 'true' });
+                else if (!isNaN(Number(value))) {
+                    return { [key]: Number(value) };
+                }
+                else if (["true", "false"].includes(value)) {
+                    return { [key]: value === "true" };
                 }
                 else {
-                    return Object.assign({}, prev, { [key]: value === 'null' ? null : value });
+                    return { [key]: value === "null" ? null : value };
                 }
-            }
+            })();
+            return Object.assign({}, prev, data);
         }, {});
     };
     return parseTraverse(query);
@@ -53,7 +59,7 @@ class RouterModuleResolver {
         };
         const middlewares = Route.middlewares || [];
         return (router) => {
-            router.use(Route.path || '/', ...middlewares.concat(defaultMiddleware), (() => {
+            router.use(Route.path || "/", ...[].concat(defaultMiddleware, middlewares), (() => {
                 const rootRouter = express_1.Router({ mergeParams: true });
                 children.forEach((child) => {
                     child && child(rootRouter);

@@ -71,7 +71,7 @@ class RouterModuleResolver {
     return (router) => {
       router.use(
         Route.path || "/",
-        ...middlewares.concat(defaultMiddleware),
+        ...[].concat(defaultMiddleware, middlewares),
         (() => {
           const rootRouter = ExpRouter({ mergeParams: true });
 
