@@ -1,15 +1,39 @@
 import { Router as ExpRouter } from "express";
 
-const parseRequestQuery = (query) => {
-  const parseTraverse = (query) => {
+var parseRequestQuery = (query) => {
+  var parseTraverse = (query) => {
     return Object.keys(query).reduce((prev, key) => {
       const hasArrayInString = query[key] && query[key][0] == "[";
       const hasObjectInString = query[key] && query[key][0] == "{";
 
-      const value =
+      var value =
         hasArrayInString || hasObjectInString
           ? JSON.parse(query[key])
           : query[key];
+
+      var parseWhenObjectShouldBeArray = (item) => {
+        const childKeys = Object.keys(item);
+
+        const isFalseArray = (child) =>
+          child instanceof Object &&
+          !(child instanceof Array) &&
+          Object.keys(child).some((attr) => attr === "0" || attr === "[0]");
+
+        return childKeys.reduce((prev, childKey) => {
+          if (isFalseArray(item[childKey])) {
+            const val = {
+              [childKey]: Object.keys(item[childKey]).reduce(
+                (p, c) => p.concat(item[childKey][c]),
+                []
+              ),
+            };
+
+            return Object.assign({}, prev, val);
+          }
+
+          return Object.assign({}, prev, { [childKey]: item[childKey] });
+        }, {});
+      };
 
       const data = (() => {
         if (typeof value === "object") {
@@ -20,7 +44,8 @@ const parseRequestQuery = (query) => {
 
             return { [key]: arrVal };
           } else {
-            return { [key]: parseTraverse(value) };
+            const val = parseWhenObjectShouldBeArray(value);
+            return { [key]: parseTraverse(val) };
           }
         } else if (!isNaN(Number(value))) {
           return { [key]: Number(value) };
