@@ -18,7 +18,8 @@
     "declaration": true
   },
   "include": [
-    "./src/**/*"
+    "./src/**/*",
+    "./playground/**/*"
   ],
   "exclude": [
     "node_modules"

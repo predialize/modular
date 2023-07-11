@@ -1,66 +1,72 @@
 import { Router as ExpRouter } from "express";
+import RouteMetadata from "./router.metadata";
 
 var parseRequestQuery = (query) => {
-  var parseTraverse = (query) => {
-    return Object.keys(query).reduce((prev, key) => {
-      const hasArrayInString = query[key] && query[key][0] == "[";
-      const hasObjectInString = query[key] && query[key][0] == "{";
+  try {
+    var parseTraverse = (query) => {
+      return Object.keys(query).reduce((prev, key) => {
+        const hasArrayInString = query[key] && query[key][0] == "[";
+        const hasObjectInString = query[key] && query[key][0] == "{";
 
-      var value =
-        hasArrayInString || hasObjectInString
-          ? JSON.parse(query[key])
-          : query[key];
+        var value =
+          hasArrayInString || hasObjectInString
+            ? JSON.parse(query[key])
+            : query[key];
 
-      var parseWhenObjectShouldBeArray = (item) => {
-        const childKeys = Object.keys(item);
+        var parseWhenObjectShouldBeArray = (item) => {
+          const childKeys = Object.keys(item);
 
-        const isFalseArray = (child) =>
-          child instanceof Object &&
-          !(child instanceof Array) &&
-          Object.keys(child).some((attr) => attr === "0" || attr === "[0]");
+          const isFalseArray = (child) =>
+            child instanceof Object &&
+            !(child instanceof Array) &&
+            Object.keys(child).some((attr) => attr === "0" || attr === "[0]");
 
-        return childKeys.reduce((prev, childKey) => {
-          if (isFalseArray(item[childKey])) {
-            const val = {
-              [childKey]: Object.keys(item[childKey]).reduce(
-                (p, c) => p.concat(item[childKey][c]),
-                []
-              ),
-            };
+          return childKeys.reduce((prev, childKey) => {
+            if (isFalseArray(item[childKey])) {
+              const val = {
+                [childKey]: Object.keys(item[childKey]).reduce(
+                  (p, c) => p.concat(item[childKey][c]),
+                  []
+                ),
+              };
 
-            return Object.assign({}, prev, val);
-          }
+              return Object.assign({}, prev, val);
+            }
 
-          return Object.assign({}, prev, { [childKey]: item[childKey] });
-        }, {});
-      };
+            return Object.assign({}, prev, { [childKey]: item[childKey] });
+          }, {});
+        };
 
-      const data = (() => {
-        if (typeof value === "object") {
-          if (value instanceof Array) {
-            const arrVal = value.map((val) =>
-              typeof val === "object" ? parseTraverse(val) : val
-            );
+        const data = (() => {
+          if (typeof value === "object") {
+            if (value instanceof Array) {
+              const arrVal = value.map((val) =>
+                typeof val === "object" ? parseTraverse(val) : val
+              );
 
-            return { [key]: arrVal };
+              return { [key]: arrVal };
+            } else {
+              const val = parseWhenObjectShouldBeArray(value);
+              return { [key]: parseTraverse(val) };
+            }
+          } else if (!isNaN(Number(value))) {
+            return { [key]: Number(value) };
+          } else if (["true", "false"].includes(value)) {
+            return { [key]: value === "true" };
           } else {
-            const val = parseWhenObjectShouldBeArray(value);
-            return { [key]: parseTraverse(val) };
+            return { [key]: value === "null" ? null : value };
           }
-        } else if (!isNaN(Number(value))) {
-          return { [key]: Number(value) };
-        } else if (["true", "false"].includes(value)) {
-          return { [key]: value === "true" };
-        } else {
-          return { [key]: value === "null" ? null : value };
-        }
-      })();
+        })();
 
-      return Object.assign({}, prev, data);
-    }, {});
-  };
+        return Object.assign({}, prev, data);
+      }, {});
+    };
 
-  return parseTraverse(query);
+    return parseTraverse(query);
+  } catch (ex) {
+    console.log("Router Module Exception - parseRequestQuery");
+    console.log(ex);
+  }
 };
 
 class RouterModuleResolver {
@@ -77,7 +83,7 @@ class RouterModuleResolver {
     return crr;
   }
 
-  resolve(Route, children) {
+  resolve(Route, children, parentRoute) {
     const defaultMiddleware = (req, res, next) => {
       const locals = req.headers.locals ? JSON.parse(req.headers.locals) : null;
       const params = req.headers.params ? JSON.parse(req.headers.params) : null;
@@ -102,12 +108,12 @@ class RouterModuleResolver {
     return (router) => {
       router.use(
         Route.path || "/",
-        ...middlewares.concat(defaultMiddleware),
+        ...[].concat(defaultMiddleware, middlewares),
         (() => {
           const rootRouter = ExpRouter({ mergeParams: true });
 
           children.forEach((child) => {
-            child && child(rootRouter);
+            child && child(rootRouter, parentRoute);
           });
 
           return rootRouter;
@@ -120,20 +126,23 @@ class RouterModuleResolver {
     return Route.resolver ? new Route.resolver() : new Route();
   }
 
-  build(routes) {
+  build(routes, parentRoute = null) {
     return routes.reduce((prev, Route) => {
-      const children = Route.children && this.build(Route.children);
+      const routeMetadata = RouteMetadata.add(Route, parentRoute);
+
+      const children =
+        Route.children && this.build(Route.children, routeMetadata);
 
       if (Route && Route.path && !Route.resolver) {
-        return prev.concat(this.resolve(Route, children));
+        return prev.concat(this.resolve(Route, children, routeMetadata));
       }
 
       const resolver = this.getResolver(Route);
 
       if (resolver && !resolver.listen) {
-        return prev.concat(resolver(Route, children));
+        return prev.concat(resolver(Route, children, routeMetadata));
       } else if (resolver.listen) {
-        return this.resolve(Route, children)(resolver);
+        return this.resolve(Route, children, routeMetadata)(resolver);
       }
     }, []);
   }
