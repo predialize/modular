@@ -7,11 +7,6 @@ import { AppRouter } from "./router";
 const RouterModule = Router.module([
   {
     resolver: ServerProvider,
-    metadata: {
-      title: "Pets",
-      name: "pets",
-      description: "Gatos, cachorros, periquito, papagaio etc...",
-    },
     children: [AppRouter],
   },
 ]);
