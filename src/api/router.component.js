@@ -46,6 +46,7 @@ exports.RouterComponent = (...componentArgs) => {
                                 const endpointOptions = {
                                     endpoint: true,
                                     http_method: method.resolver,
+                                    handler: method.propertyKey,
                                 };
                                 const endpointDefinition = router_metadata_1.default.add(endpointArg, componentDefinition || moduleArg || parentDefinition, endpointOptions);
                                 const metadataMiddlewareInjector = (req, res, next) => {
@@ -55,25 +56,18 @@ exports.RouterComponent = (...componentArgs) => {
                                 };
                                 const middlewares = [].concat(metadataMiddlewareInjector, endpointMiddlewares || [], (endpointArg === null || endpointArg === void 0 ? void 0 : endpointArg.middlewares) || []);
                                 router[method.resolver](endpointDefinition.path, ...middlewares, (req, res, next) => {
-                                    const params = req.headers.params
-                                        ? JSON.parse(req.headers.params)
-                                        : {};
-                                    const token = req.headers.authorization
-                                        ? req.headers.authorization.replace("Bearer ", "")
-                                        : null;
-                                    req.locals = req.headers.locals
-                                        ? JSON.parse(req.headers.locals)
-                                        : {};
-                                    req.params = Object.assign({}, params, req.params);
-                                    const dependencies = options && options.injects
-                                        ? options.injects.map((Dep) => new Dep({
-                                            params: req.params,
-                                            locals: req.locals,
-                                            body: req.body,
-                                            query: req.query,
-                                            token,
-                                        }))
-                                        : [];
+                                    const { params, authorization, locals } = (req === null || req === void 0 ? void 0 : req.headers) || {};
+                                    const headerParams = params ? JSON.parse(params) : {};
+                                    const token = authorization === null || authorization === void 0 ? void 0 : authorization.replace("Bearer ", "");
+                                    req.locals = locals ? JSON.parse(locals) : {};
+                                    req.params = Object.assign({}, headerParams, req.params);
+                                    const dependencies = ((options === null || options === void 0 ? void 0 : options.injects) || []).map((Dep) => new Dep({
+                                        params: req.params,
+                                        locals: req.locals,
+                                        body: req.body,
+                                        query: req.query,
+                                        token,
+                                    }));
                                     const instance = new Target(...dependencies);
                                     instance[method.propertyKey].apply(instance, [
                                         req,
