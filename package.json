@@ -1,6 +1,6 @@
 {
   "name": "@predialize/modular",
-  "version": "0.0.27",
+  "version": "0.0.28",
   "private": false,
   "description": "",
   "license": "UNLICENSED",
@@ -28,7 +28,7 @@
     "typescript": "^3.8.3"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && mv ./dist/src/api . && mv ./dist/src/core . && rm -rf dist",
     "git_push": "git add . && git commit -m 'deploy new version' && git push",
     "deploy": "npm run build && npm run git_push && npm publish --access public",
     "playground": "nodemon --watch './' --exec 'ts-node playground/index.ts' -e ts"

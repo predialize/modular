@@ -21,7 +21,7 @@ declare class Node {
 export default class Gateway {
     private app;
     private options;
-    constructor(options: any);
+    constructor(options?: any);
     getNode(options: any): Node;
     setProxy(tree: any): void;
     loadNodes(nodes: any, parent?: any): any;

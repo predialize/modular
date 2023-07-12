@@ -8,7 +8,7 @@
     "noImplicitAny": false,
     "experimentalDecorators": true,
     "sourceMap": true,
-    "outDir": "",
+    "outDir": "dist",
     "esModuleInterop": true,
     "types": ["node"],
     "typeRoots": [

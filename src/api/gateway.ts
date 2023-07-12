@@ -79,7 +79,7 @@ class Node {
         const [, ...paths] = req.url.split(this.route);
         return paths.join(this.route);
       }
-    }
+    };
 
     routes &&
       routes.forEach((route) => {
@@ -101,10 +101,13 @@ export default class Gateway {
   private app;
   private options;
 
-  constructor(options) {
+  constructor(options = null) {
     this.app = express();
     this.options = options;
-    this.app.use(cors(this.options.cors.exposedHeaders));
+
+    if (options) {
+      this.app.use(cors(this.options.cors.exposedHeaders));
+    }
   }
 
   getNode(options) {
@@ -130,7 +133,7 @@ export default class Gateway {
         : {};
 
       const parentNode = parent ? { parentNodes: [parent] } : {};
-      
+
       const currentNode = this.getNode(
         Object.assign({}, node, parentNode, middlewares)
       );
@@ -154,11 +157,15 @@ export default class Gateway {
   }
 
   listen(port, cb) {
+    if (this.options) {
+      this.app.use(cors(this.options.cors.exposedHeaders));
+    }
+
     this.app.use(json({ limit: "50mb" }));
     this.app.use(urlencoded({ limit: "50mb", extended: true }));
-    this.app.use(cors(this.options.cors.exposedHeaders));
+
     this.app.disable("x-powered-by");
 
-    this.app.listen(port, cb);
+    this.app.listen(port, (ex) => cb(ex || this.app));
   }
 }

@@ -8,9 +8,11 @@ const router_module_1 = require("./router.module");
 const router_component_1 = require("./router.component");
 const gateway_1 = __importDefault(require("./gateway"));
 exports.Gateway = gateway_1.default;
+const router_metadata_1 = __importDefault(require("./router.metadata"));
 const Router = {
     module: router_module_1.RouterModule,
-    component: router_component_1.RouterComponent
+    component: router_component_1.RouterComponent,
+    metadata: router_metadata_1.default,
 };
 exports.Router = Router;
 //# sourceMappingURL=index.js.map

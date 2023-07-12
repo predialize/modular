@@ -79,10 +79,12 @@ class Node {
     }
 }
 class Gateway {
-    constructor(options) {
+    constructor(options = null) {
         this.app = express_1.default();
         this.options = options;
-        this.app.use(cors_1.default(this.options.cors.exposedHeaders));
+        if (options) {
+            this.app.use(cors_1.default(this.options.cors.exposedHeaders));
+        }
     }
     getNode(options) {
         return new Node(this.app, options);
@@ -118,11 +120,13 @@ class Gateway {
         });
     }
     listen(port, cb) {
+        if (this.options) {
+            this.app.use(cors_1.default(this.options.cors.exposedHeaders));
+        }
         this.app.use(body_parser_1.json({ limit: "50mb" }));
         this.app.use(body_parser_1.urlencoded({ limit: "50mb", extended: true }));
-        this.app.use(cors_1.default(this.options.cors.exposedHeaders));
         this.app.disable("x-powered-by");
-        this.app.listen(port, cb);
+        this.app.listen(port, (ex) => cb(ex || this.app));
     }
 }
 exports.default = Gateway;
