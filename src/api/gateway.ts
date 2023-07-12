@@ -166,6 +166,6 @@ export default class Gateway {
 
     this.app.disable("x-powered-by");
 
-    this.app.listen(port, (ex) => cb(ex || this.app));
+    this.app.listen(port, () => cb(this.app, port));
   }
 }
