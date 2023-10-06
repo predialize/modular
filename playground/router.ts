@@ -2,9 +2,8 @@ import { Component } from "../src/core";
 import { Router } from "../src/api";
 import { Get, Post, Put, Delete } from "../src/api/router";
 
-const GetMiddleware = (req, res, next) => {
-  console.log(req.route_metadata);
-
+const MidCheck = (input) => (req, res, next) => {
+  console.log(input);
   next();
 };
 
@@ -23,10 +22,15 @@ const GetListMeta = {
   resolves: Router.component(),
 })
 export class AppRouter {
-  @Get("/", GetMiddleware)
+  @Get({ path: "/", middlewares: [MidCheck("Get 1")] })
   async GetList(request, response) {
     try {
-      response.json({ event: "Olá, getAll" });
+      const to_date = request.query.to_date;
+      const name = request.query.name;
+      const validation = request.query.validation;
+      const qtd = request.query.qtd;
+
+      response.json({ to_date, name, validation, qtd });
     } catch (ex) {
       response.status(500).send(ex);
     }

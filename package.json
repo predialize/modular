@@ -1,6 +1,6 @@
 {
   "name": "@predialize/modular",
-  "version": "0.0.29",
+  "version": "0.0.31",
   "private": false,
   "description": "",
   "license": "UNLICENSED",
@@ -32,7 +32,7 @@
     "move": "mv ./dist/src/api . && mv ./dist/src/core . && rm -rf dist",
     "build": "tsc",
     "deploy": "npm run clear && npm run build && npm run move && npm publish --access public && npm run clear",
-    "playground": "nodemon --watch './' --exec 'ts-node playground/index.ts' -e ts"
+    "start": "nodemon --watch './' --exec 'ts-node playground/index.ts' -e ts"
   },
   "main": "index.js",
   "repository": {

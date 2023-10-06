@@ -11,22 +11,11 @@ const apiMetadata = {
   version: "V1",
 };
 
-const dogsRoute = {
-  path: "/dogs",
-  metadata: {
-    name: "dogs",
-    description:
-      "Esta é um recurso de rota para que quiser acessar a list de cães.",
-  },
-  children: [AppRouter],
-};
-
 const RouterModule = Router.module([
   {
     resolver: ServerProvider,
-    path: "/pets",
     metadata: apiMetadata,
-    children: [dogsRoute],
+    children: [AppRouter],
   },
 ]);
 

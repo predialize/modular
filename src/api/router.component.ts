@@ -14,19 +14,13 @@ export const RouterComponent = (...componentArgs) => {
 
           const componentPath = componentArg?.path
             ? componentArg.path
-            : componentArg || [];
-
-          const componentMiddlewares =
-            middlewares || componentArg?.middlewares || [];
+            : typeof componentArg === "string"
+            ? componentArg
+            : "/";
 
           const routePath = []
             .concat(moduleArgs?.path || [], componentPath)
             .join("");
-
-          const routeMiddlewares = [].concat(
-            moduleArgs?.middlewares || [],
-            componentMiddlewares
-          );
 
           const moduleArg =
             !moduleArgs || moduleArgs instanceof Function
@@ -40,9 +34,14 @@ export const RouterComponent = (...componentArgs) => {
 
           appRouter.use(
             routePath,
-            ...routeMiddlewares,
             (() => {
               const router = ExpRouter({ mergeParams: true });
+
+              const componentMiddlewares = componentArg?.middlewares
+                ? componentArg.middlewares
+                : middlewares || [];
+
+              const routeMiddlewares = moduleArgs?.middlewares || [];
 
               Object.values(Target).forEach((method: any) => {
                 if (method.descriptor) {
@@ -70,6 +69,8 @@ export const RouterComponent = (...componentArgs) => {
                   };
 
                   const middlewares = [].concat(
+                    routeMiddlewares,
+                    componentMiddlewares,
                     metadataMiddlewareInjector,
                     endpointMiddlewares || [],
                     endpointArg?.middlewares || []
